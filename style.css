@@ -82,6 +82,7 @@ main {
     display: flex;
     flex: 3;
 
+    min-height: 500px;
     border-radius: 7px;
     margin: 10px;
     margin-right: 0;
@@ -107,7 +108,7 @@ main {
     color: white;
 }
 
-#controls button, select, #threshold-container {
+#controls button, select, .threshold-container {
     display: flex;
     width: 100%;
     padding: 10px;
@@ -119,11 +120,11 @@ main {
     box-shadow: 0 3px 4px black;
 }
 
-#controls button, select, #threshold {
+#controls button, select, .threshold {
     cursor: pointer;
 }
 
-#threshold-container {
+.threshold-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -138,7 +139,7 @@ main {
     color: white;
 }
 
-#threshold {
+.threshold {
     display: flex;
     width: 90%;
 }

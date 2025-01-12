@@ -19,10 +19,9 @@
         <button id="upload">Upload image</button>
         <span class="roboto-bold control-label">SORT BY</span>
         <select id="sort-type">
-          <option value="brightness">Brightness</option>
+          <option value="lightness">Lightness</option>
           <option value="hue">Hue</option>
           <option value="saturation">Saturation</option>
-          <option value="lightness">Lightness</option>
           <option value="red">Red</option>
           <option value="green">Green</option>
           <option value="blue">Blue</option>
@@ -32,13 +31,18 @@
           <option value="horizontal">Horizontal</option>
           <option value="vertical">Vertical</option>
         </select>
-        <div id="threshold-container">
-          <span id="threshold-label">Threshold 128</span>
-          <input type="range" id="threshold" min="0" max="255" value="128">
+        <div id="low-threshold-container"  class="threshold-container">
+          <span id="low-threshold-label">Mask low threshold 75</span>
+          <input type="range" id="low-threshold" class="threshold" min="0" max="255" value="75">
+        </div>
+        <div id="high-threshold-container"  class="threshold-container">
+          <span id="high-threshold-label">Mask high threshold 175</span>
+          <input type="range" id="high-threshold" class="threshold" min="0" max="255" value="175">
         </div>
         <button id="sort">Sort</button>
         <button id="reset">Reset</button>
         <button id="download">Download image</button>
+        <button id="mask-preview">Mask preview</button>
         <div id="separator"></div>
         <span id="info" class="roboto-light">
           Pixel sorting is a technique that rearranges pixels in an image based on their color values. Have fun!

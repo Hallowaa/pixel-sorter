@@ -2,9 +2,9 @@ let image
 
 function updateImageContainer() {
     if (image !== undefined) {
-        let canvas = document.getElementById('canvas');
-        let ctx = canvas.getContext('2d');
-        let img = new Image();
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
         img.src = image;
         
         img.onload = function() {
@@ -29,58 +29,170 @@ function downloadCanvas() {
     link.click();
 }
 
-function pixelSortHorizontal() {
-    let threshold = parseInt(document.getElementById('threshold').value);
-    const ctx = document.getElementById('canvas').getContext('2d');
+function applyRangeMask() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const lowThreshold = parseInt(document.getElementById('low-threshold').value);
+    const highThreshold = parseInt(document.getElementById('high-threshold').value);
 
-    for(let row = 0; row < ctx.canvas.height; row++){
-		const imgdata = ctx.getImageData(0, row, ctx.canvas.width, 1);
-		const data = imgdata.data;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
 
-		const pixels = getPixelsArray(data);
-		
-		let start = 0;
-		let end = findValueLess(pixels, threshold, start);
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
 
-        while(start < ctx.canvas.height) {
-			const range = pixels.splice(start, end - start);
-			range.sort(getSortFunction());
-			pixels.splice.apply(pixels, [start, 0].concat(range));
-			
-			start = end;
-			end = findValueLess(pixels, threshold, start + 1);
-		}
+        // Compute the grayscale intensity
+        const intensity = (r + g + b) / 3;
 
-		setDataFromPixelsArray(data, pixels);
-		ctx.putImageData(imgdata, 0, row);
-	}
+        // Apply range mask
+        if (intensity >= lowThreshold && intensity <= highThreshold) {
+            data[i] = 255;   // White for mask
+            data[i + 1] = 255;
+            data[i + 2] = 255;
+        } else {
+            data[i] = 0;     // Black for mask
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return imgData; // Return the mask for further use
 }
 
-function pixelSortVertical() {
-    let threshold = parseInt(document.getElementById('threshold').value);
-    const ctx = document.getElementById('canvas').getContext('2d');
 
-    for (let col = 0; col < ctx.canvas.width; col++) {
-        const imgdata = ctx.getImageData(col, 0, 1, ctx.canvas.height);
-        const data = imgdata.data;
+function pixelSortWithRangeMaskHorizontal() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-        const pixels = getPixelsArray(data);
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const maskData = applyRangeMask(); // Get the range mask
+
+    for (let row = 0; row < height; row++) {
+        const rowStart = row * width * 4;
+        const rowEnd = rowStart + width * 4;
+
+        // Extract the row of pixels
+        const pixels = [];
+        const mask = [];
+
+        for (let i = rowStart; i < rowEnd; i += 4) {
+            const r = maskData.data[i];
+            mask.push(r === 255); // True if the mask allows sorting
+            pixels.push({
+                r: data[i],
+                g: data[i + 1],
+                b: data[i + 2],
+                a: data[i + 3],
+            });
+        }
+
+        // Sort only the pixels within the mask
+        let start = 0;
+        while (start < mask.length) {
+            if (mask[start]) {
+                let end = start;
+                while (end < mask.length && mask[end]) {
+                    end++;
+                }
+
+                // Sort the pixels in this range
+                const range = pixels.slice(start, end);
+                range.sort(getSortFunction());
+
+                // Replace the sorted pixels back into the array
+                for (let i = start; i < end; i++) {
+                    pixels[i] = range[i - start];
+                }
+
+                start = end;
+            } else {
+                start++;
+            }
+        }
+
+        // Write the sorted row back into the image data
+        for (let i = rowStart, j = 0; i < rowEnd; i += 4, j++) {
+            data[i] = pixels[j].r;
+            data[i + 1] = pixels[j].g;
+            data[i + 2] = pixels[j].b;
+            data[i + 3] = pixels[j].a;
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+function pixelSortWithRangeMaskVertical() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const maskData = applyRangeMask(); // Get the range mask
+
+    for (let col = 0; col < width; col++) {
+        const pixels = [];
+        const mask = [];
+
+        // Extract the column of pixels
+        for (let row = 0; row < height; row++) {
+            const index = (row * width + col) * 4;
+            const r = maskData.data[index];
+            mask.push(r === 255); // True if the mask allows sorting
+            pixels.push({
+                r: data[index],
+                g: data[index + 1],
+                b: data[index + 2],
+                a: data[index + 3],
+            });
+        }
 
         let start = 0;
-        let end = findValueLess(pixels, threshold, start);
+        while (start < mask.length) {
+            if (mask[start]) {
+                let end = start;
+                while (end < mask.length && mask[end]) {
+                    end++;
+                }
 
-        while(start < ctx.canvas.height) {
-			const range = pixels.splice(start, end - start);
-			range.sort(getSortFunction());
-			pixels.splice.apply(pixels, [start, 0].concat(range));
-			
-			start = end;
-			end = findValueLess(pixels, threshold, start + 1);
-		}
+                // Sort the pixels in this range
+                const range = pixels.slice(start, end);
+                range.sort(getSortFunction());
 
-		setDataFromPixelsArray(data, pixels);
-		ctx.putImageData(imgdata, col, 0);
+                // Replace the sorted pixels back into the array
+                for (let i = start; i < end; i++) {
+                    pixels[i] = range[i - start];
+                }
+
+                start = end;
+            } else {
+                start++;
+            }
+        }
+
+        // Write the sorted column back into the image data
+        for (let row = 0; row < height; row++) {
+            const index = (row * width + col) * 4;
+            data[index] = pixels[row].r;
+            data[index + 1] = pixels[row].g;
+            data[index + 2] = pixels[row].b;
+            data[index + 3] = pixels[row].a;
+        }
     }
+
+    ctx.putImageData(imgData, 0, 0);
 }
 
 function getSortFunction() {
@@ -154,35 +266,6 @@ function rgbToHsl(r, g, b) {
     return [h, s, l];
 }
 
-function getPixelsArray(data){
-	const pixels = [];
-    let c = 0;
-	for (let i = 0; i < data.length / 4; i++) {
-		c = i * 4;
-		pixels.push({r: data[c + 0], g: data[c + 1], b: data[c + 2]});
-	};
-	return pixels;
-}
-
-function setDataFromPixelsArray(data, pixels){
-	let c = 0;
-	for (var i = 0; i < pixels.length; i++) {
-		c= i * 4;
-		data[c + 0]= pixels[i].r;
-		data[c + 1]= pixels[i].g;
-		data[c + 2]= pixels[i].b;
-	}
-}
-
-function findValueLess(pixels, val, start){
-	for (var i = start; i < pixels.length; i++){
-		if ((pixels[i].r + pixels[i].g + pixels[i].b) / 3 < val) {
-			return i;
-		}
-	}
-	return pixels.length;
-}
-
 function resizeCanvasToDisplaySize() {
     const canvas = document.querySelector("#canvas")[0];
     const container = document.querySelector("#canvas-container");
@@ -222,19 +305,31 @@ $(document).ready(function() {
         const direction = document.getElementById('direction').value
         switch(direction) {
             case 'horizontal': {
-                pixelSortHorizontal();
+                pixelSortWithRangeMaskHorizontal();
                 break;
             }
             case 'vertical': {
-                pixelSortVertical();
+                pixelSortWithRangeMaskVertical();
                 break;
             }
             default: break;
         }
     });
 
+    $('#mask-preview').on('click', function(e) {
+        applyRangeMask();
+    });
+
     $('#threshold').on('input', function(e) {
         $('#threshold-label').text('Threshold ' + e.target.value);
+    });
+
+    $('#low-threshold').on('input', function(e) {
+        $('#low-threshold-label').text('Mask low threshold ' + e.target.value);
+    });
+
+    $('#high-threshold').on('input', function(e) {
+        $('#high-threshold-label').text('Mask high threshold ' + e.target.value);
     });
 
     $('#reset').on('click', function(e) {
