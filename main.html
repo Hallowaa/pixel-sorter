@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pixel sorter</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+  </head>
+  <body>
+    <main>
+      <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+      </div>
+      <div id="controls">
+        <span id="title" class="roboto-bold">PIXEL SORTER</span>
+        <button id="upload">Upload image</button>
+        <span class="roboto-bold control-label">SORT BY</span>
+        <select id="sort-type">
+          <option value="brightness">Brightness</option>
+          <option value="hue">Hue</option>
+          <option value="saturation">Saturation</option>
+          <option value="lightness">Lightness</option>
+          <option value="red">Red</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+        </select>
+        <span class="roboto-bold control-label">DIRECTION</span>
+        <select id="direction">
+          <option value="horizontal">Horizontal</option>
+          <option value="vertical">Vertical</option>
+        </select>
+        <div id="threshold-container">
+          <span id="threshold-label">Threshold 128</span>
+          <input type="range" id="threshold" min="0" max="255" value="128">
+        </div>
+        <button id="sort">Sort</button>
+        <button id="reset">Reset</button>
+        <button id="download">Download image</button>
+        <div id="separator"></div>
+        <span id="info" class="roboto-light">
+          Pixel sorting is a technique that rearranges pixels in an image based on their color values. Have fun!
+        </span>
+      </div>
+    </main>
+    <input type="file" id="file-input" accept="image/*" hidden />
+  </body>
+</html>
