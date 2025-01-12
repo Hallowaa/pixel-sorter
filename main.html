@@ -31,6 +31,7 @@
           <option value="horizontal">Horizontal</option>
           <option value="vertical">Vertical</option>
         </select>
+        <span class="roboto-bold control-label">MASK</span>
         <div id="low-threshold-container"  class="threshold-container">
           <span id="low-threshold-label">Mask low threshold 75</span>
           <input type="range" id="low-threshold" class="threshold" min="0" max="255" value="75">
@@ -39,10 +40,12 @@
           <span id="high-threshold-label">Mask high threshold 175</span>
           <input type="range" id="high-threshold" class="threshold" min="0" max="255" value="175">
         </div>
+        <button id="mask-preview">Mask preview</button>
+        <button id="draw-mask">Draw mask</button>
+        <br/>
         <button id="sort">Sort</button>
         <button id="reset">Reset</button>
         <button id="download">Download image</button>
-        <button id="mask-preview">Mask preview</button>
         <div id="separator"></div>
         <span id="info" class="roboto-light">
           Pixel sorting is a technique that rearranges pixels in an image based on their color values. Have fun!
